@@ -251,6 +251,7 @@ void ttgo_lcd_enable(bool value) {
     }
     lcd_fade_level = 0;
     ledc_set_duty(LEDC_LOW_SPEED_MODE,(ledc_channel_t)LCD_BCKL_PWM_CHANNEL,value * (lcd_backlight_percent * 255 / 100));
+    ledc_update_duty(LEDC_LOW_SPEED_MODE,(ledc_channel_t)LCD_BCKL_PWM_CHANNEL);
 }
 
 void ttgo_backlight(uint8_t percent) {
