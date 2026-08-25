@@ -1,12 +1,13 @@
 #pragma once
-#include "panel.h"
 #include "gfx.hpp"
 #include "uix.hpp"
 extern uix::display ttgo_display;
-#define TTGO_LCD_DIM {LCD_WIDTH,LCD_HEIGHT}
-#define TTGO_PIXEL gfx::rgb_pixel<LCD_BIT_DEPTH>
+#define TTGO_LCD_WIDTH 240
+#define TTGO_LCD_HEIGHT 135
+#define TTGO_LCD_DIM { TTGO_LCD_WIDTH, TTGO_LCD_HEIGHT }
+#define TTGO_PIXEL gfx::rgb_pixel<16>
 #define TTGO_PALETTE gfx::palette_none<TTGO_PIXEL>
-using ttgo_screen_t = uix::screen_ex<gfx::bitmap<TTGO_PIXEL,TTGO_PALETTE>,LCD_X_ALIGN,LCD_Y_ALIGN>;
+using ttgo_screen_t = uix::screen_ex<gfx::bitmap<TTGO_PIXEL,TTGO_PALETTE>>;
 using ttgo_surface_t = typename ttgo_screen_t::control_surface_type;
 using ttgo_color_t = gfx::color<typename ttgo_screen_t::pixel_type>;
 extern ttgo_screen_t ttgo_default_screen;
