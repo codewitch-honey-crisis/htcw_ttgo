@@ -1,0 +1,35 @@
+{
+    "name": "htcw_ttgo",
+    "version": "0.1.0",
+    "description": "A Lilygo TTGO T-Display v1.1 devkit library",
+    "keywords": ["ttgo", "lilygo","t-display","esp-idf"],
+    "authors": {
+        "name":"honey the codewitch",
+        "homepage": "https://www.codeproject.com/Members/code-witch"
+    },
+    "license": "MIT",
+    "frameworks": "espidf",
+    "platforms": "espressif32",
+    "build": {
+        "flags": "-DTTGO_T1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/codewitch-honey-crisis/gfx.git"
+    },
+    "dependencies": {
+        "codewitch-honey-crisis/htcw_uix": "^0.17.1",
+        "codewitch-honey-crisis/htcw_esp_panel": "^0.12.0",
+        "codewitch-honey-crisis/htcw_ttgo_power": "^0.1.0"
+    },
+    "export": {
+        "exclude":
+        [
+            "tools/*.*",
+            ".vscode/*.*",
+            "lib/*.*",
+            "build/*.*",
+            "dist/*.*"
+        ]
+    }
+}
