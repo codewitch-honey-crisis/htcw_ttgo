@@ -1,6 +1,6 @@
 {
     "name": "htcw_ttgo",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "description": "A Lilygo TTGO T-Display v1.1 devkit library",
     "keywords": ["ttgo", "lilygo","t-display","esp-idf"],
     "authors": {
@@ -18,7 +18,7 @@
         "url": "https://github.com/codewitch-honey-crisis/htcw_ttgo.git"
     },
     "dependencies": {
-        "codewitch-honey-crisis/htcw_uix": "^0.17.1",
+        "codewitch-honey-crisis/htcw_uix": "^1.17.1",
         "codewitch-honey-crisis/htcw_multibutton": "^0.1.0",
         "codewitch-honey-crisis/htcw_esp_panel": "^0.12.1",
         "codewitch-honey-crisis/htcw_ttgo_power": "^0.1.2"

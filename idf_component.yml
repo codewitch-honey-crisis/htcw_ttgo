@@ -1,4 +1,4 @@
-version: "0.2.1"
+version: "0.2.3"
 description: "A Lilygo TTGO T-Display v1.1 devkit library"
 dependencies:
   idf: ">=5.0.0"
