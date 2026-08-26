@@ -10,11 +10,14 @@ It already has htcw_uix/htcw_gfx UI and graphics wired up to it, plus button mul
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <stdio.h>
-
 #include "ttgo.hpp"
 // truetype font embedded in a header:
+// Downloaded from:
+// https://github.com/edx/edx-fonts/blob/master/open-sans/fonts/Regular/OpenSans-Regular.ttf
+// Converted with:
+// https://codewitch-honey-crisis.github.io/gfx_web/header/index.html
 #define OPENSANS_REGULAR_IMPLEMENTATION
-#include "OpenSans_Regular.h"
+#include "OpenSans_Regular.hpp"
 #undef OPENSANS_REGULAR_IMPLEMENTATION
 // import the gfx and uix namespaces since we'll be using them all over
 using namespace gfx;
@@ -27,8 +30,8 @@ using painter_t = painter<ttgo_surface_t>;
 using battery_t = battery<ttgo_surface_t>;
 // the text label type:
 using label_t = label<ttgo_surface_t>;
-// wrap our header data with a stream, since gfx uses those
-static const_buffer_stream text_font_stream(OpenSans_Regular, sizeof(OpenSans_Regular));
+// reference the font stream for later use
+static const_buffer_stream& text_font_stream = OpenSans_Regular;
 // now create our truetype font with that stream
 static tt_font text_font(text_font_stream, TTGO_LCD_HEIGHT / 5, font_size_units::px);
 static mask_draw_cache draw_cache;
@@ -109,9 +112,9 @@ static void loop_task(void* arg) {
     }
 }
 extern "C" void app_main(void) {
-    // initialize the TTGO
+    // initialize the TTGO with multiplexing on all buttons
     ttgo_init(TTGO_BUTTON_ALL);
-    ttgo_display.update_strategy(screen_update_strategy::minimize_paints);
+    
     // preallocate our draw cache (not necessary, but slightly better performance)
     draw_cache.ensure(ttgo_default_screen.dimensions().width);
     // set up our font caches for faster rendering
@@ -122,6 +125,7 @@ extern "C" void app_main(void) {
 
     text_font.initialize();
 
+    // set up the screen and controls
     ttgo_default_screen.background_color(ttgo_color_t::purple);
 
     // text label control
@@ -152,9 +156,6 @@ extern "C" void app_main(void) {
     batt.draw_cache(draw_cache);
     batt.visible(false);
     ttgo_default_screen.register_control(batt);
-
-    // commit the display properties to the screen
-    ttgo_display.commit();
 
     // kick the text off
     strcpy(text_data, "start clicking!");
