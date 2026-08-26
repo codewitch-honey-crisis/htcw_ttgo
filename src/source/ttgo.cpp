@@ -230,7 +230,7 @@ bool ttgo_pressed(uint8_t gpio) {
 uint8_t ttgo_battery_level(void) {
     return ttgo_power_level(); 
 }
-void ttgo_battery_voltage(void) {
+uint16_t ttgo_battery_voltage(void) {
     return ttgo_power_voltage();
 }
 static uint8_t lcd_backlight_percent = 100;
