@@ -1,6 +1,6 @@
 {
     "name": "htcw_ttgo",
-    "version": "0.2.9",
+    "version": "0.2.10",
     "description": "A Lilygo TTGO T-Display v1.1 devkit library",
     "keywords": ["ttgo", "lilygo","t-display","esp-idf"],
     "authors": {
@@ -10,9 +10,6 @@
     "license": "MIT",
     "frameworks": "espidf",
     "platforms": "espressif32",
-    "build": {
-        "flags": "-DTTGO_T1"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/codewitch-honey-crisis/htcw_ttgo.git"
