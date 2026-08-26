@@ -16,9 +16,7 @@ It already has htcw_uix/htcw_gfx UI and graphics wired up to it, plus button mul
 // https://github.com/edx/edx-fonts/blob/master/open-sans/fonts/Regular/OpenSans-Regular.ttf
 // Converted with:
 // https://codewitch-honey-crisis.github.io/gfx_web/header/index.html
-#define OPENSANS_REGULAR_IMPLEMENTATION
 #include "OpenSans_Regular.hpp"
-#undef OPENSANS_REGULAR_IMPLEMENTATION
 // import the gfx and uix namespaces since we'll be using them all over
 using namespace gfx;
 using namespace uix;
@@ -51,8 +49,7 @@ static void start_text() {
     text_fade_ts = xTaskGetTickCount();
 }
 void dot_on_paint(ttgo_surface_t& destination, const srect16& clip, void* state) {
-    uint8_t gpio = (int)state;
-    if (!ttgo_pressed(gpio)) return;
+    // uint8_t gpio = (int)state; // don't need this right now
     draw::aa_filled_rounded_rectangle(destination, destination.dimensions().bounds(), ttgo_color_t::white, 20, &draw_cache);
 }
 void ttgo_on_pressed_changed(uint8_t gpio, bool pressed) {
@@ -63,9 +60,9 @@ void ttgo_on_pressed_changed(uint8_t gpio, bool pressed) {
         text.invalidate();
     }
     if (gpio == TTGO_BUTTON_0) {
-        dot0.invalidate();
+        dot0.visible(pressed);
     } else {
-        dot35.invalidate();
+        dot35.visible(pressed);
     }
 }
 void ttgo_on_clicks(uint8_t gpio, unsigned clicks) {
@@ -85,10 +82,12 @@ static void loop_task(void* arg) {
     TickType_t wdt_ts = xTaskGetTickCount();
     int old_batt_level = -1;
     while (1) {
+        // feed the watchdog timer
         if (xTaskGetTickCount() >= wdt_ts + pdMS_TO_TICKS(200)) {
             wdt_ts = xTaskGetTickCount();
             vTaskDelay(5);
         }
+        // update the battery display
         uint8_t batt_level = ttgo_battery_level();
         if (batt_level != old_batt_level) {
             old_batt_level = batt_level;
@@ -97,24 +96,29 @@ static void loop_task(void* arg) {
         if (text_fade_ts != 0) {
             if (xTaskGetTickCount() >= text_fade_ts + pdMS_TO_TICKS(10)) {
                 text_fade_ts = xTaskGetTickCount();
+                // fade the text
                 text_opacity -= 2;
+                // if it's done fading:
                 if (text_opacity <= 1) {
+                    // reset the text and fade
                     text.visible(false);
                     text_fade_ts = 0;
                     text_opacity = 255;
+                    // sleep the display
                     ttgo_lcd_fade_to_sleep();
                 } else {
                     text.color(uix_color_t::white.opacity8(text_opacity));
                 }
             }
         }
+        // must be called in app loop
         ttgo_update();
     }
 }
 extern "C" void app_main(void) {
     // initialize the TTGO with multiplexing on all buttons
     ttgo_init(TTGO_BUTTON_ALL);
-    
+    printf("Battery voltage: %dmV\n",ttgo_battery_voltage());
     // preallocate our draw cache (not necessary, but slightly better performance)
     draw_cache.ensure(ttgo_default_screen.dimensions().width);
     // set up our font caches for faster rendering
@@ -134,7 +138,7 @@ extern "C" void app_main(void) {
     text.measure_cache(text_measure_cache);
     text.draw_cache(text_draw_cache);
     text.color(uix_color_t::white);
-    text.text_justify(uix::uix_justify::bottom_middle);
+    text.text_justify(uix_justify::bottom_middle);
     ttgo_default_screen.register_control(text);
 
     const int16_t dot_size = text.bounds().y1 / 2;
@@ -142,11 +146,13 @@ extern "C" void app_main(void) {
     // dot 0 control
     dot0.bounds(srect16(0, 0, dot_size * 1.5 - 1, dot_size - 1));
     dot0.on_paint_callback(dot_on_paint, (void*)0);
+    dot0.visible(false);
     ttgo_default_screen.register_control(dot0);
 
     // dot 35 control
     dot35.bounds(srect16(0, 0, dot_size * 1.5 - 1, dot_size - 1).offset(0, ttgo_default_screen.dimensions().height - dot_size));
     dot35.on_paint_callback(dot_on_paint, (void*)35);
+    dot35.visible(false);
     ttgo_default_screen.register_control(dot35);
 
     // battery control
