@@ -16,6 +16,9 @@
 #ifndef TTGO_BUTTON_EVENTS
 #define TTGO_BUTTON_EVENTS MULTIBUTTON_EVENT_SIZE_DEFAULT
 #endif
+#ifndef TTGO_DEBOUNCE
+#define TTGO_DEBOUNCE 50
+#endif
 #define LCD_TRANSFER_SIZE ((120*135*16+7)/8)
 #define LCD_PIN_NUM_MOSI 19
 #define LCD_PIN_NUM_CLK 18
@@ -264,17 +267,24 @@ static TickType_t lcd_fade_ts = 0;
 void ttgo_lcd_fade_to_sleep(void) {
     lcd_fade_level = lcd_backlight_percent * 255 / 100;
 }
-
+static TickType_t debounce_0_ts=0;
+static TickType_t debounce_35_ts=0;
 void ttgo_update(void) {
     bool pressed = !gpio_get_level((gpio_num_t)TTGO_BUTTON_0);
     if (pressed != mb_0_old_pressed) {
-        multibutton_event(mb_0_handle, pdTICKS_TO_MS(xTaskGetTickCount()), pressed);
-        mb_0_old_pressed = pressed;
+        if (xTaskGetTickCount()>=debounce_0_ts+TTGO_DEBOUNCE) {
+            debounce_0_ts = xTaskGetTickCount();
+            multibutton_event(mb_0_handle, pdTICKS_TO_MS(xTaskGetTickCount()), pressed);
+            mb_0_old_pressed = pressed;
+        }
     }
     pressed = !gpio_get_level((gpio_num_t)TTGO_BUTTON_35);
     if (pressed != mb_35_old_pressed) {
-        multibutton_event(mb_35_handle, pdTICKS_TO_MS(xTaskGetTickCount()), pressed);
-        mb_35_old_pressed = pressed;
+        if (xTaskGetTickCount()>=debounce_35_ts+TTGO_DEBOUNCE) {
+            debounce_35_ts = xTaskGetTickCount();
+            multibutton_event(mb_35_handle, pdTICKS_TO_MS(xTaskGetTickCount()), pressed);
+            mb_35_old_pressed = pressed;
+        }
     }
     multibutton_update(mb_0_handle, pdTICKS_TO_MS(xTaskGetTickCount()));
     multibutton_update(mb_35_handle, pdTICKS_TO_MS(xTaskGetTickCount()));
@@ -292,5 +302,3 @@ void ttgo_update(void) {
     }
     ttgo_display.update();
 }
-
-
