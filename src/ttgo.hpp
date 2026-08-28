@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 #include "gfx.hpp"
 #include "uix.hpp"
 /// @brief The display
