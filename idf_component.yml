@@ -1,7 +1,7 @@
-version: "0.2.14"
+version: "0.2.15"
 description: "A Lilygo TTGO T-Display v1.1 devkit library"
 dependencies:
   idf: ">=5.0.0"
-  codewitch-honey-crisis/htcw_uix: ">=1.18.0,<1.19.0"
+  codewitch-honey-crisis/htcw_uix: ">=1.19.0,<1.20.0"
   codewitch-honey-crisis/htcw_multibutton: ">=0.1.0,<0.2.0"
   codewitch-honey-crisis/htcw_ttgo_power: ">=0.1.2,<0.2.0"
