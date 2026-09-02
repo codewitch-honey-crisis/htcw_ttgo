@@ -1,6 +1,6 @@
 {
     "name": "htcw_ttgo",
-    "version": "0.2.15",
+    "version": "0.2.16",
     "description": "A Lilygo TTGO T-Display v1.1 devkit library",
     "keywords": ["ttgo", "lilygo","t-display","esp-idf"],
     "authors": {

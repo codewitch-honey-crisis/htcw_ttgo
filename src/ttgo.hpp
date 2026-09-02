@@ -1,5 +1,4 @@
 #pragma once
-#include <stdint.h>
 #include "gfx.hpp"
 #include "uix.hpp"
 /// @brief The display
@@ -20,7 +19,11 @@ extern ttgo_screen_t ttgo_default_screen;
 
 #define TTGO_BUTTON_0 0
 #define TTGO_BUTTON_35 35
-
+typedef struct {
+    uint16_t width;
+    uint16_t height;
+    uint8_t rotation;
+} ttgo_lcd_metrics_t;
 /// @brief TTGO initialization options
 typedef enum {
     /// @brief No button multiplexing, only ttgo_on_pressed_changed
@@ -70,6 +73,30 @@ void ttgo_backlight(uint8_t percent);
 /// @brief Indicates whether the LCD is enabled or not
 /// @return True if enabled, otherwise false
 bool ttgo_lcd_enabled(void);
+/// @brief Gets the display metrics
+/// @param out_metrics The metrics including the dimensions and rotation
+void ttgo_lcd_metrics(ttgo_lcd_metrics_t* out_metrics);
+/// @brief Sets the rotation in 90 degree increments
+/// @param value The rotation value 0-3
+void ttgo_lcd_rotation(uint8_t value);
+/// @brief Indicates the size of the transfer buffers
+/// @return The buffer size in bytes
+size_t ttgo_lcd_transfer_buffer_size();
+/// @brief Indicates the primary transfer buffer
+/// @return A pointer to the transfer buffer
+uint8_t* ttgo_lcd_transfer_buffer();
+/// @brief Indicates the secondary transfer buffer
+/// @return A pointer to the transfer buffer
+uint8_t* ttgo_lcd_transfer_buffer2();
+/// @brief Flushes a bitmap to the display
+/// @param x1 The start x coordinate
+/// @param y1 The start y coordinate
+/// @param x2 The end x coordinate (inclusive)
+/// @param y2 The end y coordinate (inclusive)
+/// @param bitmap A pointer to the bitmap data
+void ttgo_lcd_flush_bitmap(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2, const void* bitmap);
+/// @brief Indicates that a previous call to ttgo_lcd_flush_bitmap() has completed (to be implemented by user)
+void ttgo_on_lcd_flush_complete();
 /// @brief Enables or disables the LCD
 /// @param value True to wake the display, false to sleep it
 void ttgo_lcd_enable(bool value);

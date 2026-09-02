@@ -19,7 +19,7 @@
 #ifndef TTGO_DEBOUNCE
 #define TTGO_DEBOUNCE 50
 #endif
-#define LCD_TRANSFER_SIZE (((TTGO_LCD_WIDTH/2)*TTGO_LCD_HEIGHT*16+7)/8)
+#define LCD_TRANSFER_SIZE ((120*135*16+7)/8)
 #define LCD_PIN_NUM_MOSI 19
 #define LCD_PIN_NUM_CLK 18
 #define LCD_PIN_NUM_CS 5
@@ -29,9 +29,9 @@
 #define LCD_BCKL_PWM_CHANNEL 0
 
 #define LCD_GAP_X 40
-#define LCD_GAP_Y 52
-#define LCD_MIRROR_X 0
-#define LCD_MIRROR_Y 1
+#define LCD_GAP_Y 53
+#define LCD_MIRROR_X 1
+#define LCD_MIRROR_Y 0
 #define LCD_INVERT_COLOR 1
 #define LCD_SWAP_XY 1
 
@@ -40,6 +40,7 @@ static esp_lcd_panel_handle_t lcd_handle = NULL;
 static esp_lcd_panel_io_handle_t lcd_io_handle = NULL;
 static uint8_t lcd_xfer_buffer[LCD_TRANSFER_SIZE];
 static uint8_t lcd_xfer_buffer2[LCD_TRANSFER_SIZE];
+static uint8_t lcd_rotation = 0;
 static multibutton_t mb_0_data;
 static multibutton_handle_t mb_0_handle;
 static multibutton_event_t mb_0_events[TTGO_BUTTON_EVENTS];
@@ -75,6 +76,7 @@ static void mb_on_long_click(void* state) {
 }
 static IRAM_ATTR bool on_flush_complete(esp_lcd_panel_io_handle_t lcd_io, esp_lcd_panel_io_event_data_t* edata, void* user_ctx) {
     ttgo_display.flush_complete();
+    ttgo_on_lcd_flush_complete();
     return true;
 }
 void ttgo_init(ttgo_options_t options) {
@@ -301,4 +303,89 @@ void ttgo_update(void) {
         }
     }
     ttgo_display.update();
+}
+void ttgo_lcd_rotation(uint8_t value) {
+    lcd_rotation = value & 3;
+
+    // Rotation-0 (base) orientation from the panel's compile-time config.
+    int gap_x = 0, gap_y = 0;
+#ifdef LCD_GAP_X
+    gap_x = LCD_GAP_X;
+#endif
+#ifdef LCD_GAP_Y
+    gap_y = LCD_GAP_Y;
+#endif
+    bool base_swap_xy = false, base_mirror_x = false, base_mirror_y = false;
+#if defined(LCD_SWAP_XY) && LCD_SWAP_XY
+    base_swap_xy = true;
+#endif
+#if defined(LCD_MIRROR_X) && LCD_MIRROR_X
+    base_mirror_x = true;
+#endif
+#if defined(LCD_MIRROR_Y) && LCD_MIRROR_Y
+    base_mirror_y = true;
+#endif
+
+    bool swap_xy = base_swap_xy, mirror_x = base_mirror_x, mirror_y = base_mirror_y;
+
+    switch (lcd_rotation) {
+        case 0: // 0 deg -> base, unchanged
+            break;
+        case 1: // 90 deg
+            swap_xy  = !base_swap_xy;
+            mirror_x =  base_mirror_y;
+            mirror_y = !base_mirror_x;
+            break;
+        case 2: // 180 deg
+            swap_xy  =  base_swap_xy;
+            mirror_x = !base_mirror_x;
+            mirror_y = !base_mirror_y;
+            break;
+        case 3: // 270 deg
+            swap_xy  = !base_swap_xy;
+            mirror_x = !base_mirror_y;
+            mirror_y =  base_mirror_x;
+            break;
+    }
+
+    // Odd rotations exchange the logical X/Y axes, so the per-axis gaps swap too.
+    if (lcd_rotation & 1) {
+        int t = gap_x; gap_x = gap_y; gap_y = t;
+    }
+
+    esp_lcd_panel_swap_xy(lcd_handle, swap_xy);
+    esp_lcd_panel_mirror(lcd_handle, mirror_x, mirror_y);
+    esp_lcd_panel_set_gap(lcd_handle, gap_x, gap_y);
+    if(lcd_rotation&1) {
+        ttgo_default_screen.dimensions({TTGO_LCD_HEIGHT,TTGO_LCD_WIDTH});
+    } else {
+        ttgo_default_screen.dimensions({TTGO_LCD_WIDTH,TTGO_LCD_HEIGHT});
+    }
+    ttgo_default_screen.validate_all();
+    ttgo_default_screen.invalidate();
+
+}
+__attribute__((weak)) void ttgo_on_lcd_flush_complete() {
+}
+void ttgo_lcd_metrics(ttgo_lcd_metrics_t* out_metrics) {
+    out_metrics->rotation = lcd_rotation;
+    if(lcd_rotation&1) {
+        out_metrics->width = TTGO_LCD_HEIGHT;
+        out_metrics->height = TTGO_LCD_WIDTH;
+        return;
+    }
+    out_metrics->width = TTGO_LCD_WIDTH;
+    out_metrics->height = TTGO_LCD_HEIGHT;
+}
+size_t ttgo_lcd_transfer_buffer_size() {
+    return LCD_TRANSFER_SIZE;
+}
+uint8_t* ttgo_lcd_transfer_buffer() {
+    return lcd_xfer_buffer;
+}
+uint8_t* ttgo_lcd_transfer_buffer2() {
+    return lcd_xfer_buffer2;
+}
+void ttgo_lcd_flush_bitmap(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2, const void* bitmap) {
+    esp_lcd_panel_draw_bitmap(lcd_handle,x1,y1,x2+1,y2+1,bitmap);
 }

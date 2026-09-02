@@ -11,12 +11,7 @@ It already has htcw_uix/htcw_gfx UI and graphics wired up to it, plus button mul
 #include <freertos/task.h>
 #include <stdio.h>
 #include "ttgo.hpp"
-// truetype font embedded in a header:
-// Downloaded from:
-// https://github.com/edx/edx-fonts/blob/master/open-sans/fonts/Regular/OpenSans-Regular.ttf
-// Converted with:
-// https://codewitch-honey-crisis.github.io/gfx_web/header/index.html
-#include "OpenSans_Regular.hpp"
+#include "text_font_stream.hpp"
 // import the gfx and uix namespaces since we'll be using them all over
 using namespace gfx;
 using namespace uix;
@@ -28,9 +23,7 @@ using painter_t = painter<ttgo_surface_t>;
 using battery_t = battery<ttgo_surface_t>;
 // the text label type:
 using label_t = label<ttgo_surface_t>;
-// reference the font stream for later use
-static const_buffer_stream& text_font_stream = OpenSans_Regular;
-// now create our truetype font with that stream
+// now create our truetype font with the text_font_stream
 static tt_font text_font(text_font_stream, TTGO_LCD_HEIGHT / 5, font_size_units::px);
 static mask_draw_cache draw_cache;
 painter_t dot0, dot35;
@@ -118,6 +111,7 @@ static void loop_task(void* arg) {
 extern "C" void app_main(void) {
     // initialize the TTGO with multiplexing on all buttons
     ttgo_init(TTGO_BUTTON_ALL);
+    ttgo_lcd_rotation(2);
     printf("Battery voltage: %dmV\n",ttgo_battery_voltage());
     // preallocate our draw cache (not necessary, but slightly better performance)
     draw_cache.ensure(ttgo_default_screen.dimensions().width);
